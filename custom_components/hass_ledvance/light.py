@@ -311,10 +311,10 @@ class LedvanceTuyaLight(CoordinatorEntity[LedvanceTuyaCoordinator], LightEntity)
             pass
         return None
 
-    @staticmethod
-    def _encode_colour_data(hs: tuple[float, float]) -> str:
-        """Encode HA HS (hue 0-360, saturation 0-100) to Tuya HHHHSSSSSSSS."""
+    def _encode_colour_data(self, hs: tuple[float, float]) -> str:
         h = int(hs[0])
-        s = int(hs[1] * 10)  # 0-1000
-        v = 1000              # full brightness in colour mode; dim via bright_value
+        s = int(hs[1] * 10)
+        st = self.hass.states.get("input_number." + self.entity_id.split(".", 1)[1] + "_helligkeit")
+        pct = float(st.state) if st is not None and st.state.replace(".", "", 1).isdigit() else 100.0
+        v = max(10, min(1000, round(pct * 10)))
         return f"{h:04X}{s:04X}{v:04X}"
